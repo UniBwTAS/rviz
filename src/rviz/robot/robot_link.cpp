@@ -164,6 +164,7 @@ RobotLink::RobotLink(Robot* robot,
   , trail_(nullptr)
   , axes_(nullptr)
   , material_alpha_(1.0)
+  , use_original_material(true)
   , robot_alpha_(1.0)
   , only_render_depth_(false)
   , is_selectable_(true)
@@ -383,35 +384,34 @@ void RobotLink::setOnlyRenderDepth(bool onlyRenderDepth)
 void RobotLink::updateAlpha()
 {
   float link_alpha = alpha_property_->getFloat();
-  for (auto& item : materials_)
+  M_SubEntityToMaterial::iterator it = materials_.begin();
+  M_SubEntityToMaterial::iterator end = materials_.end();
+  for (; it != end; ++it)
   {
-    Ogre::MaterialPtr& active = item.second.first;
-    const Ogre::MaterialPtr& original = item.second.second;
+    const Ogre::MaterialPtr& material = it->second;
 
     if (only_render_depth_)
     {
-      active->setColourWriteEnabled(false);
-      active->setDepthWriteEnabled(true);
+      material->setColourWriteEnabled(false);
+      material->setDepthWriteEnabled(true);
     }
     else
     {
-      Ogre::ColourValue color = active->getTechnique(0)->getPass(0)->getDiffuse();
+      Ogre::ColourValue color = material->getTechnique(0)->getPass(0)->getDiffuse();
       color.a = robot_alpha_ * material_alpha_ * link_alpha;
-      active->setDiffuse(color);
+      material->setDiffuse(color);
 
-      if (color.a < 0.9998) // transparent
+      if (color.a < 0.9998)
       {
-        active->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
-        active->setDepthWriteEnabled(false);
+        material->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
+        material->setDepthWriteEnabled(false);
+        use_original_material = false;
       }
-      else if (active == original)
+      else
       {
-        active->setSceneBlending(Ogre::SBT_REPLACE);
-        active->setDepthWriteEnabled(true);
-      }
-      else // restore original material
-      {
-        original->copyDetailsTo(active);
+        material->setSceneBlending(Ogre::SBT_REPLACE);
+        material->setDepthWriteEnabled(true);
+        use_original_material = true;
       }
     }
   }
@@ -658,23 +658,20 @@ void RobotLink::createEntityForGeometryElement(const urdf::LinkConstSharedPtr& l
       Ogre::SubEntity* sub = entity->getSubEntity(i);
       const std::string& material_name = sub->getMaterialName();
 
-      Ogre::MaterialPtr active, original;
       if (material_name == "BaseWhite" || material_name == "BaseWhiteNoLighting")
       {
-        sub->setMaterial(active = default_material_);
-        original = active; // we don't need a backup copy of the default material
+        sub->setMaterial(default_material_);
       }
       else
       {
-        // create a new material copy for each instance of a RobotLink to allow modification per link
-        active = Ogre::MaterialPtr(new Ogre::Material(
+        // create a new material copy for each instance of a RobotLink
+        Ogre::MaterialPtr mat = Ogre::MaterialPtr(new Ogre::Material(
             nullptr, material_name, 0, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME));
-        *active = *sub->getMaterial();
-        sub->setMaterial(active);
-        // create a backup of the material as we will modify the active one e.g. in updateAlpha()
-        original = active->clone(sub->getMaterial()->getName() + "_original");
+        *mat = *sub->getMaterial();
+        sub->setMaterial(mat);
       }
-      materials_[sub] = std::make_pair(active, original);
+      materials_[sub] = sub->getMaterial();
+      original_materials_[sub] = sub->getMaterial()->clone(sub->getMaterial()->getName() + "_original");
     }
   }
 }
@@ -930,9 +927,12 @@ void RobotLink::setToNormalMaterial()
   }
   else
   {
-    for (const auto& item : materials_)
+    M_SubEntityToMaterial::iterator it = materials_.begin();
+    M_SubEntityToMaterial::iterator end = materials_.end();
+    M_SubEntityToMaterial::iterator it_original = original_materials_.begin();
+    for (; it != end; ++it, ++it_original)
     {
-      item.first->setMaterial(item.second.first);
+      it->first->setMaterial(use_original_material ? it_original->second : it->second);
     }
   }
 }
