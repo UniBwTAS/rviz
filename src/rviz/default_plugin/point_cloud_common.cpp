@@ -386,7 +386,7 @@ void PointCloudCommon::initialize(DisplayContext* context, Ogre::SceneNode* scen
 
 PointCloudCommon::~PointCloudCommon()
 {
-  delete transformer_class_loader_;
+  // delete transformer_class_loader_;
 }
 
 void PointCloudCommon::loadTransformers()
