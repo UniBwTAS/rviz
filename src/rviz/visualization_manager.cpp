@@ -166,7 +166,7 @@ VisualizationManager::VisualizationManager(RenderPanel* render_panel,
   connect(view_manager_, SIGNAL(configChanged()), this, SIGNAL(configChanged()));
 
   IconizedProperty* ip = new IconizedProperty("Global Options", QVariant(), "", root_display_group_);
-  ip->setIcon(loadPixmap("package://rviz/icons/options.png"));
+  ip->setIcon(loadPixmap("package://rviz/icons/options.svg"));
   global_options_ = ip;
 
   fixed_frame_property_ =

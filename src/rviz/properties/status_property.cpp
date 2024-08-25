@@ -45,9 +45,9 @@ StatusProperty::StatusProperty(const QString& name, const QString& text, Level l
   : Property(name, text, text, parent), level_(level)
 {
   setShouldBeSaved(false);
-  status_icons_[0] = loadPixmap("package://rviz/icons/ok.png");
-  status_icons_[1] = loadPixmap("package://rviz/icons/warning.png");
-  status_icons_[2] = loadPixmap("package://rviz/icons/error.png");
+  status_icons_[0] = loadPixmap("package://rviz/icons/ok.svg");
+  status_icons_[1] = loadPixmap("package://rviz/icons/warning.svg");
+  status_icons_[2] = loadPixmap("package://rviz/icons/error.svg");
 
   if (!status_colors_[0].isValid()) // initialize default text color once
     status_colors_[0] = QApplication::palette().color(QPalette::Text);

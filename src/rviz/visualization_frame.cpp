@@ -508,7 +508,7 @@ void VisualizationFrame::initToolbars()
 
   QToolButton* add_tool_button = new QToolButton();
   add_tool_button->setToolTip("Add a new tool");
-  add_tool_button->setIcon(loadPixmap("package://rviz/icons/plus.png"));
+  add_tool_button->setIcon(loadPixmap("package://rviz/icons/plus.svg"));
   toolbar_->addWidget(add_tool_button);
   connect(add_tool_button, SIGNAL(clicked()), this, SLOT(openNewToolDialog()));
 
@@ -517,7 +517,7 @@ void VisualizationFrame::initToolbars()
   remove_tool_button->setMenu(remove_tool_menu_);
   remove_tool_button->setPopupMode(QToolButton::InstantPopup);
   remove_tool_button->setToolTip("Remove a tool from the toolbar");
-  remove_tool_button->setIcon(loadPixmap("package://rviz/icons/minus.png"));
+  remove_tool_button->setIcon(loadPixmap("package://rviz/icons/minus.svg"));
   toolbar_->addWidget(remove_tool_button);
   connect(remove_tool_menu_, SIGNAL(triggered(QAction*)), this, SLOT(onToolbarRemoveTool(QAction*)));
 
